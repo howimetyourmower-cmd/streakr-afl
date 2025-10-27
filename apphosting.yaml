@@ -7,30 +7,20 @@ env:
     FIREBASE_ADMIN_PRIVATE_KEY: |
       -----BEGIN PRIVATE KEY-----
       MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCmtDGuqBuCsggz
-      e1g7aab48kzWOesaTPUT2Yp+z/B7PwSqFw1OGEmGrwHvp2sIp9fLyqxU7Q7ZRY+b
+            e1g7aab48kzWOesaTPUT2Yp+z/
+      B7PwSqFw1OGEmGrwHvp2sIp9fLyqxU7Q7ZRY+b
       hFXHPScZJJmnfk+D48cWzdg5wtZpjlyiZke7lHRZZJbBBu66rLJoszlgbXGGjDm9
-      G+O9t2TI5ZzjGIG/tcSb/gbqucDoAeOhLZb2G+vJzvnq16Mb1RApnEy8Le30diRG
-      /ndd2a27nno5rKqvZa8V4daHyvGd5fQ6sCirVqBatwJYjQoofUTWkupLZxrSMblr
-      JQAdiZI78PAfvinoQho5BHy0bnSwGMyOgfTXVlTHv1XV+q6txwbigoM+8+FRwae1
+          G+O9t2TI5ZzjGIG/tcSb/gbqucDoAeOhLZb2G+vJzvnq16Mb1RApnEy8Le30diRG
+          /
+      ndd2a27nno5rKqvZa8V4daHyvGd5fQ6sCirVqBatwJYjQooFUtWkupLZxrSMbIr
+
+      JQAdiZ17BPAfvinoQho5BHYb6nSwGMyoGTfXVlTHV1Xlv+q6txwbig0mB+8fRwae1
+
       DVqeUFEHAgMBAAECggEAKjVOrQPIb2eHVw2gce6WxcqHtOgWRGL+3IdEn0YkA/iZ
-      RD2w8ziICU9vZJAVtCvXIjTPPHOHQnDv4vb3RwqPRzjypKuBE4pNItN8r2dLJY/T
-      mZTfDboRWX70AqywLljClWrnmKgtSd1gUyboG2V/YbRtbDyMwY8S2FJRywW8N6G2
-      NYBaBbsmVsYbcCftsGfChdXlAGGcotw3rQJmmBBSnZE+GdFb320cnK8JjSl6LzHJ
-      PiDWrCA7sJcIRHeRw9GuMM6zdUSByIB+VQMqO6ydUF6ijXzERDhZAgzhn5LUvtFm
-      QimwSTFfxvy3bbfJztfkVz8RDSscwQQWszvIl3tS3QKBgQDPcEjkb+5PmKDxlCJ6
-      zKny/YJWOYjq6ToiY9Wa0J5Oq1B9X5rK0Sk+Ssrr89lrojpLasVu9uNS9H2ZWu/+
-      wq4iW2toiGRkdXM0Opni5ePjNNhCpwFIQX103HGwE0n0Kmwe1LJxsHzeXcHVAE6y
-      tO5UY1DW0K+tksqeamrNmLVJxQKBgQDNurFgbJipe/lpvNNp4yraUJLnRWz0eQsj
-      tYnkg1AsQRDwBdLPiop5NF+tdTf78tS2rOEYB9LDpdo9GUsWvxsL8vXDh9iGQixk
-      MoSpW4zEom5nKmQRXKTUmF2EWevSx8+bFpIUc7FIEEU4aQLPpWr+3KoTHTLqo8K3
-      sHdHXow4WwKBgQCDaDIE5BMnQRzTbG/bMsOGNqnWTWQ6y7wUBQJPrFBcrZGzmljI
-      mm9yEpcxmavlz0L2e5DOln+zEUZvW3gk/tao1RjZg211ZiGwuF67qb4PNG666miZ
-      iUMcQHmUfOOgVS9g6ISSGKdBhks/z44LDyrbMn8HVfO0FQVeDTPTQiW1sQKBgQCx
-      zoNzdShUg2PDMYH/aGknGrB81hIfEWbBTCuLprpqJSpAaKgU3AZmTw/KWR8z0GJs
-      J+q73DcbBYMjf3LYi/8SSsCCaCyJjTPUvZzOyuNVJ5YH8ClgoBON8soQk68wE6Wo
-      ws8qgftc70MESC43zR42e/06W+gfx72JCSluM5c5NQKBgCwBcwMMa6kkekL8EdvK
-      QsXVPs4tulzhysZGiW5kphsevQNFotMUiopPXsBnIo+eBif3IyBuvokTdzfRlLyj
-      AXHvrpa5gQSz5pBV7oZL+2crDqxzYK6fJUKxxwZ4lisPka+JJNQq2D6vCYb6i98+
-      zVfOby5sxLdRjNT6qt4jei2d
+      
+      RD2w8ziICU9zJAVtCVXJtTPPH0nQDv4b3RwqPRzjypKuBE4pM1NH8r2dJY/TmZfT
+      ...
+      (keep every line from BEGIN to END)
+      ...
       -----END PRIVATE KEY-----
-    SEED_ADMIN_EMAIL: "howimetyourmower@gmail.com"
+    SEED_ADMIN_EMAIL: "howimetyourmower@gmail.com"a
