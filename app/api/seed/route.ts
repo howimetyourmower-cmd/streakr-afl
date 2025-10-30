@@ -37,9 +37,13 @@ export async function GET() {
     };
 
     await db.collection("picks").doc("round1").set(seedData);
-    return NextResponse.json({ message: "Seed data added successfully" });
+
+    return NextResponse.json({ message: "✅ Seed data added successfully!" });
   } catch (error: any) {
     console.error("Seed error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// Optional: prevent 405 errors if other methods are used
+export const dynamic = "force-dynamic";
