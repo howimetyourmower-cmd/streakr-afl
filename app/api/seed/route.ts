@@ -1,55 +1,69 @@
 // app/api/seed/route.ts
 import { NextResponse } from "next/server";
-import admin from "firebase-admin";
+import * as admin from "firebase-admin";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs";           // <-- important on Vercel (no Edge)
+export const dynamic = "force-dynamic";    // ensure it runs server-side each time
 
-function initAdmin() {
-  if (admin.apps.length) return admin.app();
+function getServiceAccount() {
+  const {
+    FIREBASE_ADMIN_PROJECT_ID,
+    FIREBASE_ADMIN_CLIENT_EMAIL,
+    FIREBASE_ADMIN_PRIVATE_KEY,
+  } = process.env as Record<string, string | undefined>;
 
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID!;
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL!;
-  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY!.replace(/\\n/g, "\n");
+  if (!FIREBASE_ADMIN_PROJECT_ID) throw new Error("Missing FIREBASE_ADMIN_PROJECT_ID");
+  if (!FIREBASE_ADMIN_CLIENT_EMAIL) throw new Error("Missing FIREBASE_ADMIN_CLIENT_EMAIL");
+  if (!FIREBASE_ADMIN_PRIVATE_KEY) throw new Error("Missing FIREBASE_ADMIN_PRIVATE_KEY");
 
-  return admin.initializeApp({
-    credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
-  });
+  // Accept either single-line with \n or real multiline
+  const privateKey =
+    FIREBASE_ADMIN_PRIVATE_KEY.includes("\\n")
+      ? FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, "\n")
+      : FIREBASE_ADMIN_PRIVATE_KEY;
+
+  return {
+    projectId: FIREBASE_ADMIN_PROJECT_ID,
+    clientEmail: FIREBASE_ADMIN_CLIENT_EMAIL,
+    privateKey,
+  };
+}
+
+function getDb() {
+  if (!admin.apps.length) {
+    const sa = getServiceAccount();
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: sa.projectId,
+        clientEmail: sa.clientEmail,
+        privateKey: sa.privateKey,
+      }),
+    });
+  }
+  return admin.firestore();
 }
 
 export async function GET() {
+  // simple sanity check route
+  return NextResponse.json({ ok: true, route: "/api/seed", method: "GET" });
+}
+
+export async function POST(request: Request) {
   try {
-    const app = initAdmin();
-    const db = admin.firestore(app);
+    // optional lock so only you can run it
+    const seedEmail = request.headers.get("x-seed-email");
+    if (process.env.SEED_ADMIN_EMAIL && seedEmail !== process.env.SEED_ADMIN_EMAIL) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-    const seedData = {
-      season: 2026,
-      round: 1,
-      games: [
-        {
-          match: "Richmond vs Carlton",
-          questions: [
-            { q: "Will Carlton win or draw against Richmond?" },
-            { q: "Will Patrick Cripps get 6+ disposals in Q1?" },
-          ],
-        },
-        {
-          match: "Hawthorn vs Essendon",
-          questions: [
-            { q: "Will Hawthorn win by 22+ points?" },
-            { q: "Will Kyle Langford kick a goal in Q1?" },
-          ],
-        },
-      ],
-    };
+    const db = getDb();
 
-    await db.collection("picks").doc("round1").set(seedData);
+    // --- YOUR SEEDING LOGIC HERE ---
+    // Example:
+    // await db.collection("picks").doc("status").set({ ready: true, ts: admin.firestore.FieldValue.serverTimestamp() });
+
     return NextResponse.json({ message: "✅ Firestore seeded successfully" });
   } catch (err: any) {
-    console.error("Seed error:", err);
-    return NextResponse.json(
-      { error: err?.message ?? "Unknown error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: String(err?.message || err) }, { status: 500 });
   }
 }
