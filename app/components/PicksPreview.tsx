@@ -1,65 +1,92 @@
 "use client";
-import { useEffect, useState } from "react";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { app } from "../_firebaseClient";
 
-type Question = { q: string };
-type Game = { match: string; questions: Question[] };
-type RoundDoc = { games: Game[] };
+import { useEffect, useState } from "react";
+import { getFirestore, collection, getDocs, DocumentData } from "firebase/firestore";
+import { app } from "../_firebaseClient";
+import Link from "next/link";
+
+type PickCard = {
+  match: string;
+  question: string;
+};
 
 export default function PicksPreview() {
-  const [cards, setCards] = useState<{ match: string; q: string }[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<PickCard[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
         const db = getFirestore(app);
+        // Grab all docs in "picks" (e.g. round1, round2...)
         const snap = await getDocs(collection(db, "picks"));
-        let round: RoundDoc | null = null;
-        snap.forEach((d) => {
-          if (d.id.toLowerCase() === "round1") round = d.data() as RoundDoc;
-        });
-        if (!round && !snap.empty) round = snap.docs[0].data() as RoundDoc;
 
-        const out: { match: string; q: string }[] = [];
-        if (round?.games?.length) {
-          for (const g of round.games) {
-            for (const qu of g.questions || []) {
-              out.push({ match: g.match, q: qu.q });
-              if (out.length === 6) break;
+        const cards: PickCard[] = [];
+        snap.forEach((doc) => {
+          const data = doc.data() as DocumentData;
+          const games: any[] = data.games ?? [];
+          for (const g of games) {
+            const match: string = g.match ?? "";
+            const questions: any[] = g.questions ?? [];
+            for (const q of questions) {
+              if (q?.question) {
+                cards.push({ match, question: q.question });
+              }
             }
-            if (out.length === 6) break;
           }
-        }
-        setCards(out);
-      } finally {
-        setLoading(false);
+        });
+
+        // Take only the first 6 for the preview
+        setItems(cards.slice(0, 6));
+      } catch (e: any) {
+        console.error(e);
+        setError(e?.message || "Failed to load picks");
       }
     })();
   }, []);
 
-  if (loading) return <div className="opacity-70">Loading…</div>;
-  if (cards.length === 0) return <div className="opacity-70">No fixtures found.</div>;
+  if (error) {
+    return <p className="text-red-400">Error loading picks: {error}</p>;
+  }
+
+  if (items === null) {
+    return <p className="text-gray-300">Loading picks…</p>;
+  }
+
+  if (items.length === 0) {
+    return <p className="text-gray-300">No picks available yet.</p>;
+  }
 
   return (
-    <section className="mt-10">
-      <h2 className="text-lg font-semibold mb-4 opacity-90">Upcoming Picks</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cards.map((c, i) => (
-          <article key={i}
-            className="rounded-2xl bg-white/5 border border-white/10 p-4 transition
-                       hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(255,122,0,.25)]">
-            <div className="text-xs uppercase tracking-wider opacity-70">Match</div>
-            <div className="font-semibold">{c.match}</div>
-            <div className="mt-2 text-sm opacity-90">{c.q}</div>
-            <div className="mt-3 flex gap-2">
-              <span className="rounded-full border border-white/15 px-3 py-1 text-xs">Yes</span>
-              <span className="rounded-full border border-white/15 px-3 py-1 text-xs">No</span>
-            </div>
-          </article>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="rounded-xl border border-white/10 bg-white/5 backdrop-blur
+                       p-4 hover:shadow-lg hover:shadow-orange-500/20 transition
+                       duration-200 group"
+          >
+            <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">
+              Upcoming Pick
+            </p>
+            <h4 className="text-base font-semibold text-gray-100 mb-1">
+              {item.match}
+            </h4>
+            <p className="text-sm text-gray-300">{item.question}</p>
+          </div>
         ))}
       </div>
-    </section>
+
+      <div className="text-right">
+        <Link
+          href="/picks"
+          className="inline-block rounded-lg bg-[#FF7A00] px-4 py-2 font-medium
+                     text-black hover:opacity-90 transition"
+        >
+          Make a Pick →
+        </Link>
+      </div>
+    </div>
   );
 }
