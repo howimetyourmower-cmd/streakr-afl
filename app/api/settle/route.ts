@@ -8,8 +8,7 @@ if (!getApps().length) {
       // fall back to env vars if needed in your environment
       projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
       clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\n/g, "
-"),
+      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n"),
     })
   });
 }
