@@ -25,9 +25,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0F1115] text-[#EEE]`}
       >
-        {children}
+        <div className="min-h-screen font-sans">
+          <nav className="p-4 border-b border-white/10">
+            <div className="container mx-auto flex justify-between items-center">
+              <a href="/" className="font-bold text-lg text-[#FF7A00]">Streakr</a>
+              <div className="flex gap-4 items-center">
+                <a href="/picks" className="hover:text-[#FF7A00]">Picks</a>
+                <a href="/leaderboard" className="hover:text-[#FF7A00]">Leaderboard</a>
+                <a href="/faq" className="hover:text-[#FF7A00]">FAQ</a>
+                <a href="/rewards" className="hover:text-[#FF7A00]">Rewards</a>
+                <a href="/auth" className="rounded-md bg-[#FF7A00] text-black px-3 py-1.5 text-sm font-semibold hover:brightness-110">Sign In</a>
+              </div>
+            </div>
+          </nav>
+          <main className="container mx-auto p-4">{children}</main>
+        </div>
       </body>
     </html>
   );
