@@ -1,26 +1,8 @@
-name: streakr-afl
-region: us-central1
+runtime:  nodejs20
+entrypoint:  npm  run  build  &&  npm  start
+
 env:
-  variables:
-    FIREBASE_ADMIN_PROJECT_ID: "streakr-afl-2026"
-    FIREBASE_ADMIN_CLIENT_EMAIL: "firebase-adminsdk-fbsvc@streakr-afl-2026.iam.gserviceaccount.com"
-    FIREBASE_ADMIN_PRIVATE_KEY: |
-      -----BEGIN PRIVATE KEY-----
-      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCmtDGuqBuCsggz
-            e1g7aab48kzWOesaTPUT2Yp+z/
-      B7PwSqFw1OGEmGrwHvp2sIp9fLyqxU7Q7ZRY+b
-      hFXHPScZJJmnfk+D48cWzdg5wtZpjlyiZke7lHRZZJbBBu66rLJoszlgbXGGjDm9
-          G+O9t2TI5ZzjGIG/tcSb/gbqucDoAeOhLZb2G+vJzvnq16Mb1RApnEy8Le30diRG
-          /
-      ndd2a27nno5rKqvZa8V4daHyvGd5fQ6sCirVqBatwJYjQooFUtWkupLZxrSMbIr
-
-      JQAdiZ17BPAfvinoQho5BHYb6nSwGMyoGTfXVlTHV1Xlv+q6txwbig0mB+8fRwae1
-
-      DVqeUFEHAgMBAAECggEAKjVOrQPIb2eHVw2gce6WxcqHtOgWRGL+3IdEn0YkA/iZ
-      
-      RD2w8ziICU9zJAVtCVXJtTPPH0nQDv4b3RwqPRzjypKuBE4pM1NH8r2dJY/TmZfT
-      ...
-      (keep every line from BEGIN to END)
-      ...
-      -----END PRIVATE KEY-----
-    SEED_ADMIN_EMAIL: "howimetyourmower@gmail.com"a
+  -  name:  NODE_ENV
+     value: "production"
+  -  name:  NEXT_TELEMETRY_DISABLED
+     value:  "1"
