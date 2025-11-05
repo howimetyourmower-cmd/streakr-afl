@@ -1,92 +1,56 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
-import { getFirestore, collection, getDocs, DocumentData } from "firebase/firestore";
-import { app } from "../_firebaseClient";
-import Link from "next/link";
 
-type PickCard = {
-  match: string;
-  question: string;
-};
+type Question = { quarter: number; question: string };
+type Game = { match: string; questions: Question[] };
 
 export default function PicksPreview() {
-  const [items, setItems] = useState<PickCard[] | null>(null);
+  const [games, setGames] = useState<Game[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const db = getFirestore(app);
-        // Grab all docs in "picks" (e.g. round1, round2...)
-        const snap = await getDocs(collection(db, "picks"));
-
-        const cards: PickCard[] = [];
-        snap.forEach((doc) => {
-          const data = doc.data() as DocumentData;
-          const games: any[] = data.games ?? [];
-          for (const g of games) {
-            const match: string = g.match ?? "";
-            const questions: any[] = g.questions ?? [];
-            for (const q of questions) {
-              if (q?.question) {
-                cards.push({ match, question: q.question });
-              }
-            }
-          }
-        });
-
-        // Take only the first 6 for the preview
-        setItems(cards.slice(0, 6));
+        const res = await fetch('/api/fixtures');
+        if (!res.ok) {
+          throw new Error('Failed to fetch fixtures');
+        }
+        const data = await res.json();
+        setGames(Array.isArray(data.games) ? data.games : []);
       } catch (e: any) {
-        console.error(e);
-        setError(e?.message || "Failed to load picks");
+        console.error("Failed to load fixtures:", e);
+        setError("Could not load picks. Please try again later.");
       }
     })();
   }, []);
 
-  if (error) {
-    return <p className="text-red-400">Error loading picks: {error}</p>;
-  }
-
-  if (items === null) {
-    return <p className="text-gray-300">Loading picks…</p>;
-  }
-
-  if (items.length === 0) {
-    return <p className="text-gray-300">No picks available yet.</p>;
-  }
+  if (error) return <p className="text-red-400">{error}</p>;
+  if (games === null) return <p>Loading picks...</p>;
+  if (!games.length) return <p>No picks available yet.</p>;
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {items.map((item, i) => (
-          <div
-            key={i}
-            className="rounded-xl border border-white/10 bg-white/5 backdrop-blur
-                       p-4 hover:shadow-lg hover:shadow-orange-500/20 transition
-                       duration-200 group"
-          >
-            <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">
-              Upcoming Pick
-            </p>
-            <h4 className="text-base font-semibold text-gray-100 mb-1">
-              {item.match}
-            </h4>
-            <p className="text-sm text-gray-300">{item.question}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="text-right">
-        <Link
-          href="/picks"
-          className="inline-block rounded-lg bg-[#FF7A00] px-4 py-2 font-medium
-                     text-black hover:opacity-90 transition"
-        >
-          Make a Pick →
-        </Link>
-      </div>
+    <div className="space-y-6">
+      {games.map((g, i) => (
+        <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow">
+          <h3 className="text-xl font-semibold text-orange-400">{g.match}</h3>
+          <ul className="mt-4 space-y-3">
+            {g.questions?.map((q, qi) => (
+              <li key={qi} className="flex items-center justify-between rounded-xl bg-black/30 p-3">
+                <div>
+                  <p className="text-sm uppercase text-white/60">Q{q.quarter}</p>
+                  <p className="text-base">{q.question}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button className="rounded-xl px-3 py-2 bg-white/10 hover:bg-white/20 transition">Yes</button>
+                  <button className="rounded-xl px-3 py-2 bg-white/10 hover:bg-white/20 transition">No</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

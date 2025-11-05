@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "streakr-afl-2026"
+  },
+  "targets": {
+    "streakr-afl-2026": {
+      "hosting": {
+        "streakr-afl": [
+          "streakr-afl-2026"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "cli": {
+    "nonInteractive": true
+  }
+}

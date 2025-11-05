@@ -1,69 +1,102 @@
-"use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import PicksPreview from "./components/PicksPreview";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/lib/useAuth';
+import SignInModal from '@/components/auth/SignInModal';
+import HeroSection from '@/components/HeroSection';
+import { Timestamp } from 'firebase/firestore';
+import Link from 'next/link';
+import StatusBadge from '@/components/picks/StatusBadge';
+
+// Main Home Page Component
+export default function HomePage() {
+  const { user, loading: authLoading } = useAuth();
+  const [questions, setQuestions] = useState<any[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  // Data fetching and error handling
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch('/api/questions', { cache: 'no-store' });
+        if (!res.ok) {
+          throw new Error('Failed to fetch questions');
+        }
+        const { questions } = await res.json();
+        setQuestions(questions || []);
+      } catch (e: any) {
+        console.error('Upcoming questions load error:', e);
+        const message = e?.message || 'Failed to load upcoming questions.';
+        if (message.includes('requires an index')) {
+          const urlMatch = message.match(/https?:\/\/[^\s]+/);
+          if (urlMatch) {
+            setErr(`Firestore needs a compound index. Please create it by visiting this URL: ${urlMatch[0]}`);
+            return;
+          }
+        }
+        setErr('Failed to load upcoming questions.');
+      }
+    };
+    fetchQuestions();
+  }, []);
+
+  const isLoading = authLoading || questions === null;
+
   return (
-    <main className="min-h-screen text-[#EEE] bg-[#0F1115]">
-      {/* Hero */}
-      <section className="relative h-[38vh] w-full overflow-hidden">
-        <Image
-          src="/mcg-hero.jpg"
-          alt="MCG at night"
-          fill
-          priority
-          className="object-cover"
-        />
-        {/* darken overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/40 to-black/70" />
-        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
-          <div>
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight drop-shadow">
-              Streakr AFL 2026
-            </h1>
-            <p className="mt-3 text-lg md:text-xl text-gray-200">
-              Make your pick, build your streak.
-            </p>
+    <>
+      <HeroSection />
 
-            {/* Primary CTA */}
-            <div className="mt-6">
-              <Link
-                href="/picks"
-                className="inline-block rounded-xl bg-[#FF7A00] px-5 py-3 text-black font-semibold hover:opacity-90 transition"
-              >
-                Make a Pick
-              </Link>
-            </div>
+      <section id="picks" className="max-w-6xl mx-auto px-4 py-16">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold">Upcoming Picks</h2>
+          <p className="mt-2 text-white/70">Make your selections for the upcoming rounds.</p>
+        </div>
+
+        {isLoading && !err && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-48 rounded-xl bg-white/5 animate-pulse"></div>
+            ))}
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* Sponsor banner (optional placeholder) */}
-      <section className="px-6 md:px-10 -mt-6">
-        <div
-          className="rounded-2xl border border-white/10 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800
-                     p-4 md:p-5 shadow-[0_0_30px_-10px_rgba(0,0,0,0.6)]"
-        >
-          <div className="flex items-center justify-between">
-            <div className="text-sm uppercase tracking-widest text-gray-400">Sponsored</div>
-            <div className="text-base md:text-lg font-semibold text-gray-100">
-              TCL 4K Game Mode — See every play
-            </div>
+        {err && <div className="mt-8 text-center text-red-400 bg-red-900/50 p-4 rounded-lg">{err}</div>}
+
+        {!isLoading && !err && questions && questions.length === 0 && (
+          <div className="mt-8 text-center text-white/50">No picks available yet.</div>
+        )}
+
+        {!isLoading && !err && questions && questions.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {questions.map(question => (
+              <div key={question.id} className="bg-white/5 rounded-xl border border-white/10 p-5 flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-center">
+                    <p className="font-semibold">{question.match}</p>
+                    <StatusBadge status={question.status} />
+                  </div>
+                  <p className="text-sm text-gray-400">Q{question.quarter}</p>
+                  <p className="mt-3 font-bold text-lg">{question.text}</p>
+                </div>
+                <div className="mt-5">
+                  <Link href="/picks">
+                    <button
+                      disabled={question.status === 'final'}
+                      className="w-full py-2.5 rounded-lg text-sm font-semibold transition bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                    >
+                      Make This Pick
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </section>
 
-      {/* Upcoming Picks */}
-      <section className="px-6 md:px-10 mt-10 mb-16">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-[#FF7A00] text-xl">🔥</span>
-          <h2 className="text-2xl font-bold">Upcoming Picks</h2>
-        </div>
-        <PicksPreview />
-      </section>
-    </main>
+      <SignInModal open={showModal} onClose={() => setShowModal(false)} />
+    </>
   );
 }
-

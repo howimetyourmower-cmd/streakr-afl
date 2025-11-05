@@ -1,15 +1,40 @@
+
+"use client";
+import { useEffect, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
+import { LeaderboardTable } from "@/components/LeaderboardTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 export default function LeaderboardPage() {
+  const [data, setData] = useState<{ round: any; season: any } | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/leaderboard");
+      const json = await res.json();
+      setData(json);
+    })();
+  }, []);
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Leaderboard</h1>
-      <p className="opacity-80">Public leaderboard coming soon. (Visible to guests and signed-in users.)</p>
-      <div className="rounded-2xl border border-white/10 p-4 bg-white/5">
-        <div className="opacity-60 text-sm">Example</div>
-        <ul className="mt-2 space-y-2">
-          <li>#1 DemoUser — Streak: 7</li>
-          <li>#2 SampleUser — Streak: 6</li>
-        </ul>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <PageHeader title="Leaderboard" subtitle="See who's leading the pack" />
+
+      {!data && <p>Loading leaderboards...</p>}
+      {data && (
+        <Tabs defaultValue="round">
+          <TabsList className="mb-4">
+            <TabsTrigger value="round">Current Round</TabsTrigger>
+            <TabsTrigger value="season">Season-Long</TabsTrigger>
+          </TabsList>
+          <TabsContent value="round">
+            <LeaderboardTable leaders={data.round} />
+          </TabsContent>
+          <TabsContent value="season">
+            <LeaderboardTable leaders={data.season} />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
