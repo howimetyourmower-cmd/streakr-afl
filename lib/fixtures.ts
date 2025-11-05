@@ -1,6 +1,7 @@
 // lib/fixtures.ts
 import "server-only";
-import { adminDb } from "./firebaseAdmin";
+import { adminDB } from "./firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 type AnyRec = Record<string, any>;
 
@@ -58,12 +59,12 @@ const mapQuestion = (
 };
 
 export async function getPendingSettlementPicks(): Promise<AnyRec[]> {
-  const snap = await adminDb.collection("picks").where("status", "==", "pending").get();
+  const snap = await adminDB.collection("picks").where("status", "==", "pending").get();
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 export async function getAdminAuditLog(limit = 100): Promise<AnyRec[]> {
-  const snap = await adminDb
+  const snap = await adminDB
     .collection("adminAudit")
     .orderBy("ts", "desc")
     .limit(limit)
@@ -71,17 +72,36 @@ export async function getAdminAuditLog(limit = 100): Promise<AnyRec[]> {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-export async function settlePick(pickId: string, result: "yes" | "no" | "void"): Promise<void> {
-  await adminDb.collection("picks").doc(pickId).update({ status: "final", result });
+export async function settlePick(
+  pickId: string,
+  result: "yes" | "no" | "void",
+  settledBy = "unknown"
+): Promise<void> {
+  const batch = adminDB.batch();
+
+  // 1. Update the pick itself
+  const pickRef = adminDB.collection("picks").doc(pickId);
+  batch.update(pickRef, { status: "final", result });
+
+  // 2. Create an audit-log entry
+  const auditRef = adminDB.collection("adminAudit").doc();
+  batch.set(auditRef, {
+    pickId,
+    result,
+    settledBy,
+    settledAt: FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
 }
 
 export async function getUserPicks(uid: string): Promise<AnyRec[]> {
-  const snap = await adminDb.collection("picks").where("uid", "==", uid).get();
+  const snap = await adminDB.collection("picks").where("uid", "==", uid).get();
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 export async function getLeaderboardTop(limit = 100): Promise<AnyRec[]> {
-    const snap = await adminDb
+    const snap = await adminDB
         .collection("users")
         .orderBy("roundScore", "desc")
         .limit(limit)
@@ -90,7 +110,7 @@ export async function getLeaderboardTop(limit = 100): Promise<AnyRec[]> {
 }
 
 export async function getSeasonLeaderboardTop(limit = 100): Promise<AnyRec[]> {
-    const snap = await adminDb
+    const snap = await adminDB
         .collection("users")
         .orderBy("seasonScore", "desc")
         .limit(limit)
@@ -99,12 +119,12 @@ export async function getSeasonLeaderboardTop(limit = 100): Promise<AnyRec[]> {
 }
 
 export async function getUpcomingQuestions(limit = 6): Promise<AnyRec[]> {
-  const snap = await adminDb.collection("questions").where("status", "==", "pending").limit(limit).get();
+  const snap = await adminDB.collection("questions").where("status", "==", "pending").limit(limit).get();
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 export async function getLatestRoundId(): Promise<string> {
-    const snap = await adminDb
+    const snap = await adminDB
         .collection("rounds")
         .orderBy("startsAt", "desc")
         .limit(1)
@@ -116,17 +136,17 @@ export async function getLatestRoundId(): Promise<string> {
 }
 
 export async function getRoundData(roundId: string): Promise<AnyRec | null> {
-    const roundDoc = await adminDb.collection("rounds").doc(roundId).get();
+    const roundDoc = await adminDB.collection("rounds").doc(roundId).get();
     if (!roundDoc.exists) {
         return null;
     }
-    const questionsSnap = await adminDb.collection("questions").where("roundId", "==", roundId).get();
+    const questionsSnap = await adminDB.collection("questions").where("roundId", "==", roundId).get();
     const questions = questionsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     return { id: roundDoc.id, ...roundDoc.data(), questions };
 }
 
 export async function getRoundQuestions(roundId: string): Promise<PublicQuestion[]> {
-  const snap = await adminDb.collection("questions").where("roundId", "==", roundId).get();
+  const snap = await adminDB.collection("questions").where("roundId", "==", roundId).get();
   return snap.docs.map(d => mapQuestion(roundId, d.data().gameId, d));
 }
 
@@ -139,7 +159,7 @@ export async function saveUserPick(uid: string, questionId: string, choice: "yes
     createdAt: new Date(),
   };
 
-  const query = adminDb
+  const query = adminDB
     .collection("picks")
     .where("uid", "==", uid)
     .where("questionId", "==", questionId)
@@ -148,9 +168,9 @@ export async function saveUserPick(uid: string, questionId: string, choice: "yes
   const snapshot = await query.get();
 
   if (snapshot.empty) {
-    await adminDb.collection("picks").add(pick);
+    await adminDB.collection("picks").add(pick);
   } else {
     const docId = snapshot.docs[0].id;
-    await adminDb.collection("picks").doc(docId).update({ choice });
+    await adminDB.collection("picks").doc(docId).update({ choice });
   }
 }

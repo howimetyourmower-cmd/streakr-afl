@@ -1,4 +1,4 @@
-const { adminDb } = require('../lib/firebaseAdmin');
+const { adminDB } = require('../lib/firebaseAdmin');
 
 (async () => {
   console.log('Seeding Firestore...');
@@ -27,7 +27,7 @@ const { adminDb } = require('../lib/firebaseAdmin');
   ];
 
   for (const pick of picks) {
-    await adminDb.collection('picks').add(pick);
+    await adminDB.collection('picks').add(pick);
   }
 
   console.log('Seeded picks');
