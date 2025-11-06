@@ -13,5 +13,4 @@ const cfg = {
 export function getClientApp() {
   return getApps().length ? getApp() : initializeApp(cfg);
 }
-
 export const clientDb = getFirestore(getClientApp());
