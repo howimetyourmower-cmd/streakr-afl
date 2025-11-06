@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/useAuth';
 import SignInModal from '@/components/auth/SignInModal';
-import { db } from '@/lib/firebaseClient';
+import { db } from '@/src/lib/firebaseClient';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface Comment {

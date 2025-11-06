@@ -4,8 +4,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, app } from "@/lib/firebaseClient";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getClientAuth, getClientDb } from "@/src/lib/firebaseClient";
+import { doc, setDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -38,9 +38,10 @@ export default function SignUpPage() {
     }
 
     try {
+      const auth = getClientAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const db = getFirestore(app);
+      const db = getClientDb();
       await setDoc(doc(db, "users", user.uid), {
         name,
         suburb,

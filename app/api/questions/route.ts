@@ -1,12 +1,12 @@
 // app/api/questions/route.ts
 import { NextResponse } from "next/server";
-import { adminDB } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/src/lib/admin";
 
 export const runtime = "nodejs"; // ensure Node runtime for Vercel
 export async function GET() {
   try {
     // Adjust round id if needed (e.g., "round-1")
-    const snap = await adminDB.collection("fixtures").doc("round-1").get();
+    const snap = await adminDb.collection("fixtures").doc("round-1").get();
     if (!snap.exists) return NextResponse.json({ questions: [] });
 
     const data = snap.data() as any;

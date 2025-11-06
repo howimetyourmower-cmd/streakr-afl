@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDB } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/src/lib/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const ref = adminDB.collection("fixtures").doc(roundId);
+    const ref = adminDb.collection("fixtures").doc(roundId);
     const snap = await ref.get();
     if (!snap.exists) return NextResponse.json({ error: "Round not found" }, { status: 404 });
 

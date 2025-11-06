@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "@/lib/firebaseClient";
+import { auth } from "@/src/lib/firebaseClient";
 
 export default function SignInModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;

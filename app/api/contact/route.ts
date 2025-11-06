@@ -1,6 +1,5 @@
-// app/api/contact/route.ts
 import { NextResponse } from "next/server";
-import { adminDB } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/src/lib/admin";
 import { FieldValue } from "firebase-admin/firestore";
 
 export const runtime = "nodejs";
@@ -12,7 +11,7 @@ export async function POST(req: Request) {
     if (!name || !email || !message) {
       return NextResponse.json({ ok: false, error: "Missing fields" }, { status: 400 });
     }
-    await adminDB.collection("contact_messages").add({
+    await adminDb.collection("contact_messages").add({
       name,
       email,
       message,

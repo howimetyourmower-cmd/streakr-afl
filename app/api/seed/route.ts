@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDB } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/src/lib/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
     if (!payload?.round) return NextResponse.json({ ok: false, error: "Missing round" }, { status: 400 });
 
-    const ref = adminDB.collection("fixtures").doc(`round-${payload.round}`);
+    const ref = adminDb.collection("fixtures").doc(`round-${payload.round}`);
     const exists = (await ref.get()).exists;
     if (exists) return NextResponse.json({ ok: true, skipped: `round-${payload.round}` });
 
