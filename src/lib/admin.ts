@@ -1,9 +1,10 @@
+// src/lib/admin.ts
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
 function normalizePem(s: string) {
-  // normalize any combination of real or escaped newlines
+  // real newlines, escaped \n, trim BOM/whitespace
   return s.replace(/\r?\n/g, "\n").replace(/\\r?\\n/g, "\n").replace(/^\uFEFF/, "").trim();
 }
 
@@ -14,10 +15,9 @@ function fromBase64Env() {
 
   if (!b64) throw new Error("FIREBASE_ADMIN_PRIVATE_KEY_BASE64 is missing");
 
-  let decoded = Buffer.from(b64, "base64").toString("utf8");
-  decoded = decoded.replace(/^\uFEFF/, "").trim();
+  let decoded = Buffer.from(b64, "base64").toString("utf8").replace(/^\uFEFF/, "").trim();
 
-  // Case A: full JSON
+  // Case A: env holds the FULL serviceAccount JSON (recommended)
   try {
     const json = JSON.parse(decoded);
     return {
@@ -26,10 +26,17 @@ function fromBase64Env() {
       privateKey: normalizePem(String(json.private_key || "")),
     };
   } catch {
-    // Case B: PEM string only
-    if (!fallbackProjectId || !fallbackClientEmail)
-      throw new Error("PEM-only mode requires FIREBASE_ADMIN_PROJECT_ID and FIREBASE_ADMIN_CLIENT_EMAIL");
-    return { projectId: fallbackProjectId, clientEmail: fallbackClientEmail, privateKey: normalizePem(decoded) };
+    // Case B: env holds ONLY the PEM private key
+    if (!fallbackProjectId || !fallbackClientEmail) {
+      throw new Error(
+        "PEM-only mode requires FIREBASE_ADMIN_PROJECT_ID and FIREBASE_ADMIN_CLIENT_EMAIL"
+      );
+    }
+    return {
+      projectId: fallbackProjectId,
+      clientEmail: fallbackClientEmail,
+      privateKey: normalizePem(decoded),
+    };
   }
 }
 
